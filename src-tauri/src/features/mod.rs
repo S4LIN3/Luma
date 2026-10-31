@@ -1,6 +1,7 @@
 pub mod audio;
 pub mod battery;
 pub mod bluetooth;
+pub mod brightness;
 pub mod dock;
 pub mod media;
 pub mod monitors;

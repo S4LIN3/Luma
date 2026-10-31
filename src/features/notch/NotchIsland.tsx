@@ -9,6 +9,7 @@ import {
   BatteryStatus,
   NotificationState,
   VisualizerBands,
+  BrightnessStatus,
 } from "../../core/types";
 import { MusicMode } from "./modes/MusicMode";
 import { CommandCenterMode } from "./modes/CommandCenterMode";
@@ -36,11 +37,14 @@ interface NotchIslandProps {
   network: NetworkStatus | null;
   bluetooth: BluetoothStatus | null;
   battery: BatteryStatus | null;
+  brightness: BrightnessStatus | null;
   notifications: NotificationState | null;
   onMediaToggle: () => void;
   onVolumeChange: (vol: number) => void;
   onToggleMute: () => void;
+  onToggleWifi: () => void;
   onToggleBluetooth: () => void;
+  onBrightnessChange: (percent: number) => void;
 }
 
 export const NotchIsland: React.FC<NotchIslandProps> = ({
@@ -50,10 +54,13 @@ export const NotchIsland: React.FC<NotchIslandProps> = ({
   network,
   bluetooth,
   battery,
+  brightness,
   onMediaToggle,
   onVolumeChange,
   onToggleMute,
+  onToggleWifi,
   onToggleBluetooth,
+  onBrightnessChange,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveNotchTab>("music");
@@ -281,9 +288,12 @@ export const NotchIsland: React.FC<NotchIslandProps> = ({
                     audio={audio}
                     network={network}
                     bluetooth={bluetooth}
+                    brightness={brightness}
                     onVolumeChange={onVolumeChange}
                     onToggleMute={onToggleMute}
+                    onToggleWifi={onToggleWifi}
                     onToggleBluetooth={onToggleBluetooth}
+                    onBrightnessChange={onBrightnessChange}
                   />
                 )}
                 {activeTab === "status" && <StatusMode battery={battery} />}

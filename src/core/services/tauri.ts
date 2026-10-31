@@ -17,6 +17,10 @@ import {
   SurfaceGeometry,
   SurfaceManagerStatus,
   VisualizerBands,
+  BrightnessStatus,
+  WifiAccessPoint,
+  DiscoveredApp,
+  DockSettingsUpdate,
 } from "../types";
 
 export const isTauriEnvironment = (): boolean => {
@@ -53,14 +57,48 @@ const mockNotchState: NotchState = {
 const mockDockConfig: DockConfig = {
   position: "Bottom",
   icon_size: 52,
+  spacing: 8,
   autohide: false,
   magnification: true,
   magnification_scale: 1.25,
+  separate_pinned_and_running: true,
   items: [
-    { id: "terminal", title: "Cosmic Terminal", icon: "Terminal", is_pinned: true, is_running: true, active_instances: 1 },
-    { id: "files", title: "Cosmic Files", icon: "Folder", is_pinned: true, is_running: false, active_instances: 0 },
-    { id: "browser", title: "Web Browser", icon: "Globe", is_pinned: true, is_running: true, active_instances: 2 },
-    { id: "settings", title: "Luma Settings", icon: "Settings", is_pinned: true, is_running: true, active_instances: 1 },
+    {
+      id: "com.system76.CosmicFiles.desktop",
+      title: "COSMIC Files",
+      icon: "com.system76.CosmicFiles",
+      command: "cosmic-files",
+      is_pinned: true,
+      is_running: false,
+      active_instances: 0,
+    },
+    {
+      id: "brave-browser.desktop",
+      title: "Brave Web Browser",
+      icon: "brave-browser",
+      command: "brave-browser",
+      is_pinned: true,
+      is_running: true,
+      active_instances: 1,
+    },
+    {
+      id: "com.system76.CosmicTerm.desktop",
+      title: "COSMIC Terminal",
+      icon: "com.system76.CosmicTerm",
+      command: "cosmic-term",
+      is_pinned: true,
+      is_running: true,
+      active_instances: 1,
+    },
+    {
+      id: "com.system76.CosmicSettings.desktop",
+      title: "COSMIC Settings",
+      icon: "com.system76.CosmicSettings",
+      command: "cosmic-settings",
+      is_pinned: true,
+      is_running: false,
+      active_instances: 0,
+    },
   ],
 };
 
@@ -90,12 +128,56 @@ const mockMediaStatus: MediaStatus = {
 };
 
 const mockAudioStatus: AudioStatus = {
-  volume: 68,
+  volume: 80,
   is_muted: false,
-  default_sink: { id: "alsa_output.pci", name: "Built-in Audio Analog Stereo", is_default: true },
+  default_sink: {
+    id: "alsa_output.pci-0000_00_1f.3.analog-stereo",
+    name: "Built-in Audio Analog Stereo",
+    description: "Built-in Audio Analog Stereo",
+    is_default: true,
+    is_sink: true,
+    volume: 80,
+    is_muted: false,
+  },
+  default_source: {
+    id: "alsa_input.pci-0000_00_1f.3.analog-stereo",
+    name: "Built-in Microphone",
+    description: "Internal Audio Microphone",
+    is_default: true,
+    is_sink: false,
+    volume: 50,
+    is_muted: false,
+  },
   available_sinks: [
-    { id: "alsa_output.pci", name: "Built-in Audio Analog Stereo", is_default: true },
-    { id: "bluez_output", name: "Bluetooth Headphones", is_default: false },
+    {
+      id: "alsa_output.pci-0000_00_1f.3.analog-stereo",
+      name: "Built-in Audio Analog Stereo",
+      description: "Built-in Audio Analog Stereo",
+      is_default: true,
+      is_sink: true,
+      volume: 80,
+      is_muted: false,
+    },
+    {
+      id: "bluez_output",
+      name: "jlab jbuds lux anc",
+      description: "Bluetooth Headphones",
+      is_default: false,
+      is_sink: true,
+      volume: 85,
+      is_muted: false,
+    },
+  ],
+  available_sources: [
+    {
+      id: "alsa_input.pci-0000_00_1f.3.analog-stereo",
+      name: "Built-in Microphone",
+      description: "Internal Audio Microphone",
+      is_default: true,
+      is_sink: false,
+      volume: 50,
+      is_muted: false,
+    },
   ],
   backend: "PipeWire",
 };
@@ -103,20 +185,63 @@ const mockAudioStatus: AudioStatus = {
 const mockNetworkStatus: NetworkStatus = {
   network_type: "WiFi",
   is_connected: true,
-  ssid: "Pop_Studio_5G",
+  ssid: "keralavision(kcn)",
   signal_strength: 84,
-  ip_address: "192.168.1.145",
-  interface_name: "wlan0",
+  ip_address: "192.168.1.7",
+  interface_name: "wlp0s20f3",
+  wifi_enabled: true,
+  available_networks: [
+    { ssid: "keralavision(kcn)", signal_strength: 84, security: "WPA2", is_active: true },
+    { ssid: "Shine broadband_EXT", signal_strength: 40, security: "WPA2", is_active: false },
+  ],
 };
 
 const mockBluetoothStatus: BluetoothStatus = {
   is_enabled: true,
   is_scanning: false,
-  adapter_name: "Pop!_OS Bluetooth Adapter",
+  adapter_name: "salman",
   devices: [
-    { name: "Wireless ANC Headphones", address: "00:1A:7D:DA:71:13", is_connected: true, battery_percentage: 85 },
-    { name: "Cosmic Mouse", address: "E4:5F:01:22:98:A1", is_connected: true, battery_percentage: 92 },
+    {
+      name: "jlab jbuds lux anc",
+      address: "7B:88:11:11:B1:9E",
+      is_connected: false,
+      is_paired: true,
+      battery_percentage: 85,
+      icon: "audio-headset",
+    },
+    {
+      name: "Airdopes Alpha",
+      address: "A5:A1:F4:EF:74:4B",
+      is_connected: false,
+      is_paired: true,
+      battery_percentage: null,
+      icon: "audio-headset",
+    },
   ],
+};
+
+const mockBrightnessStatus: BrightnessStatus = {
+  percentage: 75,
+  current_device: {
+    name: "intel_backlight",
+    current: 20000,
+    max: 26666,
+    percentage: 75,
+    device_type: "raw",
+    is_writable: false,
+  },
+  available_devices: [
+    {
+      name: "intel_backlight",
+      current: 20000,
+      max: 26666,
+      percentage: 75,
+      device_type: "raw",
+      is_writable: false,
+    },
+  ],
+  backend: "systemd-logind",
+  is_supported: true,
 };
 
 const mockBatteryStatus: BatteryStatus = {
@@ -205,6 +330,83 @@ export const LumaApi = {
     return await invoke<DockConfig>("set_dock_position", { position });
   },
 
+  discoverApplications: async (): Promise<DiscoveredApp[]> => {
+    if (!isTauriEnvironment()) {
+      return mockDockConfig.items.map((it) => ({
+        id: it.id,
+        name: it.title,
+        icon_name: it.icon,
+        icon_data_url: it.icon_data_url,
+        exec: it.command || it.id,
+        desktop_file: `/usr/share/applications/${it.id}`,
+        categories: ["Utility"],
+        keywords: [it.title],
+        is_terminal: false,
+        is_pinned: it.is_pinned,
+        is_running: it.is_running,
+        active_instances: it.active_instances,
+      }));
+    }
+    return await invoke<DiscoveredApp[]>("discover_applications");
+  },
+
+  launchApplication: async (desktopId: string): Promise<void> => {
+    if (!isTauriEnvironment()) {
+      console.log(`[Mock] Launching application ${desktopId}`);
+      return;
+    }
+    await invoke("launch_application", { desktopId });
+  },
+
+  pinApplication: async (desktopId: string, targetIndex?: number): Promise<DockConfig> => {
+    if (!isTauriEnvironment()) {
+      const exists = mockDockConfig.items.some((i) => i.id === desktopId);
+      if (!exists) {
+        mockDockConfig.items.push({
+          id: desktopId,
+          title: desktopId.replace(".desktop", ""),
+          icon: "application-x-executable",
+          is_pinned: true,
+          is_running: false,
+          active_instances: 0,
+        });
+      }
+      return mockDockConfig;
+    }
+    return await invoke<DockConfig>("pin_application", { desktopId, targetIndex });
+  },
+
+  unpinApplication: async (desktopId: string): Promise<DockConfig> => {
+    if (!isTauriEnvironment()) {
+      mockDockConfig.items = mockDockConfig.items.filter((i) => i.id !== desktopId);
+      return mockDockConfig;
+    }
+    return await invoke<DockConfig>("unpin_application", { desktopId });
+  },
+
+  reorderDockItems: async (orderedIds: string[]): Promise<DockConfig> => {
+    if (!isTauriEnvironment()) {
+      const itemMap = new Map(mockDockConfig.items.map((i) => [i.id, i]));
+      mockDockConfig.items = orderedIds.map((id) => itemMap.get(id)!).filter(Boolean);
+      return mockDockConfig;
+    }
+    return await invoke<DockConfig>("reorder_dock_items", { orderedIds });
+  },
+
+  updateDockSettings: async (settings: DockSettingsUpdate): Promise<DockConfig> => {
+    if (!isTauriEnvironment()) {
+      if (settings.position) mockDockConfig.position = settings.position;
+      if (settings.icon_size) mockDockConfig.icon_size = settings.icon_size;
+      if (settings.spacing) mockDockConfig.spacing = settings.spacing;
+      if (settings.autohide !== undefined) mockDockConfig.autohide = settings.autohide;
+      if (settings.magnification !== undefined) mockDockConfig.magnification = settings.magnification;
+      if (settings.magnification_scale !== undefined) mockDockConfig.magnification_scale = settings.magnification_scale;
+      if (settings.separate_pinned_and_running !== undefined) mockDockConfig.separate_pinned_and_running = settings.separate_pinned_and_running;
+      return mockDockConfig;
+    }
+    return await invoke<DockConfig>("update_dock_settings", { settings });
+  },
+
   getSettings: async (): Promise<UserSettings> => {
     if (!isTauriEnvironment()) return mockSettings;
     return await invoke<UserSettings>("get_settings");
@@ -243,6 +445,54 @@ export const LumaApi = {
   toggleMute: async (): Promise<AudioStatus> => {
     if (!isTauriEnvironment()) return { ...mockAudioStatus, is_muted: !mockAudioStatus.is_muted };
     return await invoke<AudioStatus>("toggle_mute");
+  },
+
+  setAudioDefaultEndpoint: async (endpointId: string, isSink: boolean): Promise<AudioStatus> => {
+    if (!isTauriEnvironment()) return mockAudioStatus;
+    return await invoke<AudioStatus>("set_audio_default_endpoint", {
+      endpointId,
+      isSink,
+    });
+  },
+
+  toggleWifi: async (): Promise<NetworkStatus> => {
+    if (!isTauriEnvironment()) return { ...mockNetworkStatus, wifi_enabled: !mockNetworkStatus.wifi_enabled };
+    return await invoke<NetworkStatus>("toggle_wifi");
+  },
+
+  setWifiEnabled: async (enabled: boolean): Promise<NetworkStatus> => {
+    if (!isTauriEnvironment()) return { ...mockNetworkStatus, wifi_enabled: enabled };
+    return await invoke<NetworkStatus>("set_wifi_enabled", { enabled });
+  },
+
+  scanWifiNetworks: async (): Promise<WifiAccessPoint[]> => {
+    if (!isTauriEnvironment()) return mockNetworkStatus.available_networks;
+    return await invoke<WifiAccessPoint[]>("scan_wifi_networks");
+  },
+
+  setBluetoothEnabled: async (enabled: boolean): Promise<BluetoothStatus> => {
+    if (!isTauriEnvironment()) return { ...mockBluetoothStatus, is_enabled: enabled };
+    return await invoke<BluetoothStatus>("set_bluetooth_enabled", { enabled });
+  },
+
+  connectBluetoothDevice: async (address: string): Promise<BluetoothStatus> => {
+    if (!isTauriEnvironment()) return mockBluetoothStatus;
+    return await invoke<BluetoothStatus>("connect_bluetooth_device", { address });
+  },
+
+  disconnectBluetoothDevice: async (address: string): Promise<BluetoothStatus> => {
+    if (!isTauriEnvironment()) return mockBluetoothStatus;
+    return await invoke<BluetoothStatus>("disconnect_bluetooth_device", { address });
+  },
+
+  getBrightnessStatus: async (): Promise<BrightnessStatus> => {
+    if (!isTauriEnvironment()) return mockBrightnessStatus;
+    return await invoke<BrightnessStatus>("get_brightness_status");
+  },
+
+  setBrightness: async (percentage: number): Promise<BrightnessStatus> => {
+    if (!isTauriEnvironment()) return { ...mockBrightnessStatus, percentage };
+    return await invoke<BrightnessStatus>("set_brightness", { percentage });
   },
 
   getNetworkStatus: async (): Promise<NetworkStatus> => {

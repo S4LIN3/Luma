@@ -133,7 +133,31 @@ The Luma Notch operates as an interactive floating island driven by Framer Motio
 
 ---
 
-## 6. IPC Interface Specification
+## 6. Linux System Controls (Phase 6)
+
+Luma directly interfaces with modern Linux system services without requiring root privileges:
+- **Audio (PipeWire & WirePlumber)**: Reads volume and mute states via `wpctl` / `pactl` JSON, adjusts output levels, and manages default sink/source routing.
+- **Network (NetworkManager)**: Queries Wi-Fi radio status, connection state, SSID, signal strength %, IP addresses, and allows toggling Wi-Fi and scanning nearby access points via `nmcli`.
+- **Bluetooth (BlueZ)**: Queries adapter status, power state, and lists paired peripherals with battery telemetry via `bluetoothctl`.
+- **Battery (UPower & Sysfs)**: Reads live battery charge, state (`Charging`, `Discharging`, `Full`), and calculates remaining discharge time from energy and power rates.
+- **Backlight (systemd-logind D-Bus & Sysfs)**: Reads `/sys/class/backlight/*` and adjusts screen brightness without `sudo` by calling `org.freedesktop.login1.Session.SetBrightness` over the session bus.
+
+---
+
+## 7. Application Dock Architecture (Phase 7)
+
+The Luma Dock operates as a standalone desktop surface with real system application discovery:
+- **XDG Desktop Entry Specification**: Discovers applications across `/usr/share/applications`, `~/.local/share/applications`, and Flatpak exports (`/var/lib/flatpak/exports/share/applications`).
+- **Real Icon Loading**: Resolves application icon paths from icon themes (`Pop`, `Cosmic`, `hicolor`, `pixmaps`) and encodes them into standard base64 Data URLs for instant client rendering.
+- **Application Launching**: Spawns applications detached from the desktop process, stripping field codes (`%U`, `%F`, etc.) and handling terminal apps.
+- **Running Indicators**: Detects active application processes by inspecting `/proc` and displays glowing indicators with instance counts.
+- **Pinning & Drag-and-Drop Reordering**: Allows pinning, unpinning, and dragging to reorder dock items with persistence at `~/.config/luma/dock.json`.
+- **Context Menus**: Right-click actions for launching, pinning/unpinning, and app management.
+- **Application Search & Launcher**: Integrated modal dialog with instant search across all discovered native and Flatpak applications.
+
+---
+
+## 8. IPC Interface Specification
 
 | Command | Arguments | Return Type | Subsystem / Description |
 |---|---|---|---|
@@ -145,6 +169,12 @@ The Luma Notch operates as an interactive floating island driven by Framer Motio
 | `set_notch_mode` | `mode: NotchMode` | `NotchState` | Changes notch mode |
 | `get_dock_config` | None | `DockConfig` | Returns dock layout, pinned items, and settings |
 | `set_dock_position`| `position: DockPosition` | `DockConfig` | Reorients dock |
+| `discover_applications` | None | `Vec<DiscoveredApp>` | Scans and returns all installed XDG applications |
+| `launch_application` | `desktop_id: String` | `()` | Launches application detached |
+| `pin_application` | `desktop_id: String, target_index: Option<usize>` | `DockConfig` | Pins application to dock and persists to disk |
+| `unpin_application` | `desktop_id: String` | `DockConfig` | Unpins application and persists to disk |
+| `reorder_dock_items` | `ordered_ids: Vec<String>` | `DockConfig` | Reorders pinned applications and persists order |
+| `update_dock_settings` | `settings: DockSettingsUpdate` | `DockConfig` | Updates dock dimensions, spacing, autohide, and effects |
 | `get_settings` | None | `UserSettings` | Retrieves user preferences |
 | `update_settings` | `settings: UserSettings` | `UserSettings` | Persists user preferences |
 | `get_media_status` | None | `MediaStatus` | Queries live MPRIS media player metadata |
@@ -155,9 +185,18 @@ The Luma Notch operates as an interactive floating island driven by Framer Motio
 | `get_audio_status` | None | `AudioStatus` | Returns PipeWire volume, mute state, default sink |
 | `set_volume` | `volume: u32` | `AudioStatus` | Sets master volume percentage (0 - 100) |
 | `toggle_mute` | None | `AudioStatus` | Toggles audio mute |
+| `set_audio_default_endpoint` | `endpoint_id: String, is_sink: bool` | `AudioStatus` | Switches default audio sink or source |
 | `get_network_status`| None | `NetworkStatus` | Returns network type, SSID, signal strength |
+| `toggle_wifi` | None | `NetworkStatus` | Toggles Wi-Fi radio on/off |
+| `set_wifi_enabled` | `enabled: bool` | `NetworkStatus` | Sets Wi-Fi radio state |
+| `scan_wifi_networks` | None | `Vec<WifiAccessPoint>` | Scans nearby Wi-Fi networks |
 | `get_bluetooth_status`| None | `BluetoothStatus` | Returns adapter status and connected devices |
 | `toggle_bluetooth` | None | `BluetoothStatus` | Enables/disables Bluetooth adapter |
+| `set_bluetooth_enabled` | `enabled: bool` | `BluetoothStatus` | Sets Bluetooth adapter state |
+| `connect_bluetooth_device` | `address: String` | `BluetoothStatus` | Connects paired Bluetooth peripheral |
+| `disconnect_bluetooth_device` | `address: String` | `BluetoothStatus` | Disconnects Bluetooth peripheral |
+| `get_brightness_status` | None | `BrightnessStatus` | Queries hardware backlight percentage and controller |
+| `set_brightness` | `percentage: u32` | `BrightnessStatus` | Sets screen brightness via systemd-logind D-Bus |
 | `get_battery_status`| None | `BatteryStatus` | Returns battery level, state, and remaining time |
 | `get_notifications`| None | `NotificationState` | Retrieves notification items and DND state |
 | `dismiss_notification`| `id: u32` | `NotificationState` | Dismisses a specific notification |

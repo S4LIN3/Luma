@@ -55,34 +55,51 @@ Luma connects to D-Bus for IPC with system daemons and other desktop application
   - Methods: `PlayPause`, `Next`, `Previous`, `Stop`, `Seek`
   - Properties: `PlaybackStatus` ("Playing", "Paused", "Stopped"), `Metadata` (`xesam:title`, `xesam:artist`, `xesam:album`, `mpris:artUrl`, `mpris:length`).
 
-### 3.3. Audio Control (PipeWire / WirePlumber)
-- **Interface**: Direct PulseAudio emulation socket (`/run/user/<uid>/pulse/native`) or native PipeWire client API (`/run/user/<uid>/pipewire-0`).
-- **Capabilities**: Query default sink/source, adjust volume levels (0 - 100%), and toggle mute without spawning heavy CLI wrappers.
+### 3.3. Audio Control (PipeWire / WirePlumber & pactl)
+- **Primary Interface**: PipeWire CLI / WirePlumber session manager (`wpctl`).
+- **Secondary Interface**: PulseAudio compatibility socket (`pactl` with JSON output formatting).
+- **Capabilities**:
+  - Sink and source enumeration with active default detection.
+  - Volume retrieval and adjustment without elevated permissions (`wpctl get-volume @DEFAULT_AUDIO_SINK@`, `wpctl set-volume @DEFAULT_AUDIO_SINK@ <level>`).
+  - Mute state toggling (`wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle`).
+  - Dynamic input/output audio endpoint switching (`wpctl set-default <id>`, `pactl set-default-sink <name>`).
 
 ### 3.4. Network Connectivity (NetworkManager)
-- **Interface**: `org.freedesktop.NetworkManager` on the system bus.
+- **Interface**: `org.freedesktop.NetworkManager` on the system bus & `nmcli`.
 - **Capabilities**:
-  - State monitoring (`PrimaryConnection`, `Connectivity`).
-  - Active wireless network SSID and RSSI signal strength metrics.
+  - Wi-Fi radio status monitoring and toggling (`nmcli radio wifi [on|off]`).
+  - Active connection inspection (SSID, signal strength %, IP address, interface).
+  - Nearby access point discovery (`nmcli -t -f SSID,SIGNAL,SECURITY,ACTIVE dev wifi`).
 
 ### 3.5. Bluetooth (BlueZ)
-- **Interface**: `org.bluez` on the system bus.
+- **Interface**: `org.bluez` on the system bus & `bluetoothctl`.
 - **Capabilities**:
-  - Adapter power state (`Powered` property on `org.bluez.Adapter1`).
-  - Device enumeration (`org.bluez.Device1`) for connected headphones, mice, and keyboards including battery reporting via `org.bluez.Battery1`.
+  - Controller state detection (`Powered`, `Discovering`, `Alias`).
+  - Adapter power toggling (`bluetoothctl power [on|off]`).
+  - Paired and connected peripheral enumeration with battery level detection.
+  - Connect / disconnect peripheral handling (`bluetoothctl connect <mac>`, `bluetoothctl disconnect <mac>`).
 
 ### 3.6. Power & Battery (UPower & Sysfs)
-- **Primary Interface**: `org.freedesktop.UPower` on the system bus.
+- **Primary Interface**: `org.freedesktop.UPower` on the system bus & `upower -i <device>`.
 - **Fallback Interface**: Direct Linux kernel sysfs scanning under `/sys/class/power_supply/BAT*/`:
   - `capacity`: percentage (0 - 100)
-  - `status`: "Charging", "Discharging", "Full"
-- Luma implements automatic sysfs fallback when running inside sandboxed or restricted environments.
+  - `status`: "Charging", "Discharging", "Full", "Not charging"
+  - `energy_now` and `power_now`: Real-time remaining battery time calculation (`(energy_now / power_now) * 60`).
+  - Kernel platform power profile detection (`/sys/firmware/acpi/platform_profile` or `powerprofilesctl`).
 
-### 3.7. Desktop Notifications
+### 3.7. Screen Backlight & Brightness (systemd-logind D-Bus & Sysfs)
+- **Primary Interface**: `org.freedesktop.login1.Session.SetBrightness` on the system bus (`org.freedesktop.login1 /org/freedesktop/login1/session/auto`).
+- **Permissions**: Requires **NO** root / sudo privileges; systemd-logind grants the active graphical session user permission to adjust backlight devices.
+- **Device Discovery**: Enumerates hardware backlight controllers under `/sys/class/backlight/*` (e.g., `intel_backlight`, `amdgpu_bl0`).
+- **Fallback Interfaces**:
+  - Direct sysfs write if user has write permissions (e.g. `video` group membership or udev rule).
+  - `brightnessctl` command integration if installed.
+
+### 3.8. Desktop Notifications
 - **Interface**: `org.freedesktop.Notifications` on the session bus.
 - **Capabilities**: Receive and display transient toast notifications or query notification history.
 
-### 3.8. Monitor Management
+### 3.9. Monitor Management
 - **Wayland**: Monitored via Wayland `wl_output` and `wlr-output-management-unstable-v1` or `xdg-desktop-portal` display properties.
 - **Capabilities**: Query display dimensions, physical size, refresh rate, and scale factor for correct notch/dock placement.
 

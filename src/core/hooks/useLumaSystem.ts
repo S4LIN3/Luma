@@ -11,6 +11,7 @@ import {
   BatteryStatus,
   NotificationState,
   MonitorConfiguration,
+  BrightnessStatus,
 } from "../types";
 import { LumaApi } from "../services/tauri";
 
@@ -24,6 +25,7 @@ export function useLumaSystem() {
   const [network, setNetwork] = useState<NetworkStatus | null>(null);
   const [bluetooth, setBluetooth] = useState<BluetoothStatus | null>(null);
   const [battery, setBattery] = useState<BatteryStatus | null>(null);
+  const [brightness, setBrightnessState] = useState<BrightnessStatus | null>(null);
   const [notifications, setNotifications] = useState<NotificationState | null>(null);
   const [monitors, setMonitors] = useState<MonitorConfiguration | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +42,7 @@ export function useLumaSystem() {
         netStatus,
         btStatus,
         bStatus,
+        brightStatus,
         notifs,
         monConfig,
       ] = await Promise.all([
@@ -52,6 +55,7 @@ export function useLumaSystem() {
         LumaApi.getNetworkStatus(),
         LumaApi.getBluetoothStatus(),
         LumaApi.getBatteryStatus(),
+        LumaApi.getBrightnessStatus(),
         LumaApi.getNotifications(),
         LumaApi.getMonitors(),
       ]);
@@ -65,12 +69,58 @@ export function useLumaSystem() {
       setNetwork(netStatus);
       setBluetooth(btStatus);
       setBattery(bStatus);
+      setBrightnessState(brightStatus);
       setNotifications(notifs);
       setMonitors(monConfig);
     } catch (err) {
       console.error("Failed to load Luma system metrics:", err);
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const handleVolumeChange = useCallback(async (vol: number) => {
+    try {
+      const updated = await LumaApi.setVolume(vol);
+      setAudio(updated);
+    } catch (e) {
+      console.error("Failed to set volume:", e);
+    }
+  }, []);
+
+  const handleToggleMute = useCallback(async () => {
+    try {
+      const updated = await LumaApi.toggleMute();
+      setAudio(updated);
+    } catch (e) {
+      console.error("Failed to toggle mute:", e);
+    }
+  }, []);
+
+  const handleToggleWifi = useCallback(async () => {
+    try {
+      const updated = await LumaApi.toggleWifi();
+      setNetwork(updated);
+    } catch (e) {
+      console.error("Failed to toggle wifi:", e);
+    }
+  }, []);
+
+  const handleToggleBluetooth = useCallback(async () => {
+    try {
+      const updated = await LumaApi.toggleBluetooth();
+      setBluetooth(updated);
+    } catch (e) {
+      console.error("Failed to toggle bluetooth:", e);
+    }
+  }, []);
+
+  const handleBrightnessChange = useCallback(async (percent: number) => {
+    try {
+      const updated = await LumaApi.setBrightness(percent);
+      setBrightnessState(updated);
+    } catch (e) {
+      console.error("Failed to set brightness:", e);
     }
   }, []);
 
@@ -96,6 +146,12 @@ export function useLumaSystem() {
     setBluetooth,
     battery,
     setBattery,
+    brightness,
+    setBrightness: handleBrightnessChange,
+    handleVolumeChange,
+    handleToggleMute,
+    handleToggleWifi,
+    handleToggleBluetooth,
     notifications,
     setNotifications,
     monitors,

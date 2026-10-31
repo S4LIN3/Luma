@@ -36,7 +36,10 @@ export const StatusMode: React.FC<StatusModeProps> = ({ battery }) => {
             <p className="text-[10px] text-slate-400 mt-0.5">
               {battery?.time_to_empty_minutes
                 ? `${Math.floor(battery.time_to_empty_minutes / 60)}h ${battery.time_to_empty_minutes % 60}m remaining`
-                : "Balanced Profile"}
+                : battery?.time_to_full_minutes
+                ? `${Math.floor(battery.time_to_full_minutes / 60)}h ${battery.time_to_full_minutes % 60}m to full`
+                : `${battery?.power_profile || "Balanced"} Profile`}
+              {battery?.energy_rate_watts ? ` • ${battery.energy_rate_watts.toFixed(1)}W` : ""}
             </p>
           </div>
           <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">

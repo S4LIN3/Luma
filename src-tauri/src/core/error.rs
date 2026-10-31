@@ -27,6 +27,12 @@ pub enum LumaError {
     #[error("Hardware/Subsystem not available: {0}")]
     SubsystemUnavailable(String),
 
+    #[error("Permission denied: {0}")]
+    PermissionDenied(String),
+
+    #[error("Brightness control error: {0}")]
+    Brightness(String),
+
     #[error("Entity not found: {0}")]
     NotFound(String),
 

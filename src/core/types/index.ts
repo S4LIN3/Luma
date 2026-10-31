@@ -66,14 +66,33 @@ export interface NotchState {
   active_subtitle: string | null;
 }
 
-// Dock
+// Dock (Phase 7)
 export type DockPosition = "Bottom" | "Left" | "Right" | "Top";
+
+export interface DiscoveredApp {
+  id: string;
+  name: string;
+  generic_name?: string | null;
+  comment?: string | null;
+  icon_name: string;
+  icon_data_url?: string | null;
+  exec: string;
+  desktop_file: string;
+  categories: string[];
+  keywords: string[];
+  is_terminal: boolean;
+  is_pinned: boolean;
+  is_running: boolean;
+  active_instances: number;
+}
 
 export interface DockItem {
   id: string;
   title: string;
   icon: string;
+  icon_data_url?: string | null;
   command?: string | null;
+  desktop_file?: string | null;
   is_pinned: boolean;
   is_running: boolean;
   active_instances: number;
@@ -82,10 +101,22 @@ export interface DockItem {
 export interface DockConfig {
   position: DockPosition;
   icon_size: number;
+  spacing: number;
   autohide: boolean;
   magnification: boolean;
   magnification_scale: number;
+  separate_pinned_and_running: boolean;
   items: DockItem[];
+}
+
+export interface DockSettingsUpdate {
+  position?: DockPosition;
+  icon_size?: number;
+  spacing?: number;
+  autohide?: boolean;
+  magnification?: boolean;
+  magnification_scale?: number;
+  separate_pinned_and_running?: boolean;
 }
 
 // Settings
@@ -120,23 +151,54 @@ export interface MediaStatus {
   can_play_pause: boolean;
 }
 
+// Brightness (Phase 6)
+export interface BacklightDevice {
+  name: string;
+  current: number;
+  max: number;
+  percentage: number;
+  device_type: string;
+  is_writable: boolean;
+}
+
+export interface BrightnessStatus {
+  percentage: number;
+  current_device?: BacklightDevice | null;
+  available_devices: BacklightDevice[];
+  backend: string;
+  is_supported: boolean;
+}
+
 // Audio
 export interface AudioEndpoint {
   id: string;
   name: string;
+  description: string;
   is_default: boolean;
+  is_sink: boolean;
+  volume: number;
+  is_muted: boolean;
 }
 
 export interface AudioStatus {
   volume: number;
   is_muted: boolean;
   default_sink: AudioEndpoint;
+  default_source?: AudioEndpoint | null;
   available_sinks: AudioEndpoint[];
+  available_sources: AudioEndpoint[];
   backend: string;
 }
 
 // Network
 export type NetworkType = "WiFi" | "Ethernet" | "Disconnected";
+
+export interface WifiAccessPoint {
+  ssid: string;
+  signal_strength: number;
+  security: string;
+  is_active: boolean;
+}
 
 export interface NetworkStatus {
   network_type: NetworkType;
@@ -145,6 +207,8 @@ export interface NetworkStatus {
   signal_strength: number;
   ip_address?: string | null;
   interface_name: string;
+  wifi_enabled: boolean;
+  available_networks: WifiAccessPoint[];
 }
 
 // Bluetooth
@@ -152,7 +216,9 @@ export interface BluetoothDevice {
   name: string;
   address: string;
   is_connected: boolean;
+  is_paired: boolean;
   battery_percentage?: number | null;
+  icon: string;
 }
 
 export interface BluetoothStatus {
@@ -172,6 +238,9 @@ export interface BatteryStatus {
   time_to_full_minutes?: number | null;
   power_profile: string;
   is_present: boolean;
+  vendor?: string | null;
+  model?: string | null;
+  energy_rate_watts?: number | null;
 }
 
 // Notifications

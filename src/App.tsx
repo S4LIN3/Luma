@@ -33,11 +33,15 @@ function AppContent() {
     media,
     setMedia,
     audio,
-    setAudio,
     network,
     bluetooth,
-    setBluetooth,
     battery,
+    brightness,
+    setBrightness,
+    handleToggleWifi,
+    handleToggleBluetooth,
+    handleVolumeChange,
+    handleToggleMute,
     notifications,
     setNotifications,
     monitors,
@@ -50,21 +54,6 @@ function AppContent() {
   const handleMediaToggle = async () => {
     const updated = await LumaApi.toggleMediaPlayPause();
     setMedia(updated);
-  };
-
-  const handleVolumeChange = async (volume: number) => {
-    const updated = await LumaApi.setVolume(volume);
-    setAudio(updated);
-  };
-
-  const handleToggleMute = async () => {
-    const updated = await LumaApi.toggleMute();
-    setAudio(updated);
-  };
-
-  const handleToggleBluetooth = async () => {
-    const updated = await LumaApi.toggleBluetooth();
-    setBluetooth(updated);
   };
 
   const handleDismissNotification = async (id: number) => {
@@ -94,11 +83,14 @@ function AppContent() {
             network={network}
             bluetooth={bluetooth}
             battery={battery}
+            brightness={brightness}
             notifications={notifications}
             onMediaToggle={handleMediaToggle}
             onVolumeChange={handleVolumeChange}
             onToggleMute={handleToggleMute}
+            onToggleWifi={handleToggleWifi}
             onToggleBluetooth={handleToggleBluetooth}
+            onBrightnessChange={setBrightness}
           />
         </header>
       )}
@@ -221,6 +213,7 @@ function AppContent() {
             onPositionChange={(pos) => {
               LumaApi.setDockPosition(pos).then(setDock);
             }}
+            onConfigUpdate={setDock}
           />
         </footer>
       )}

@@ -6,6 +6,7 @@ use core::state::AppState;
 use features::audio::{self, AudioManager};
 use features::battery::{self, BatteryManager};
 use features::bluetooth::{self, BluetoothManager};
+use features::brightness::{self, BrightnessManager};
 use features::dock::{self, DockManager};
 use features::media::{self, MediaManager};
 use features::monitors::{self, MonitorManager};
@@ -34,6 +35,7 @@ pub fn run() {
         .manage(AudioManager::new())
         .manage(NetworkManager::new())
         .manage(BluetoothManager::new())
+        .manage(BrightnessManager::new())
         .manage(BatteryManager::new())
         .manage(NotificationManager::new())
         .manage(MonitorManager::new())
@@ -47,6 +49,12 @@ pub fn run() {
             notch::set_notch_mode,
             dock::get_dock_config,
             dock::set_dock_position,
+            dock::discover_applications,
+            dock::launch_application,
+            dock::pin_application,
+            dock::unpin_application,
+            dock::reorder_dock_items,
+            dock::update_dock_settings,
             settings::get_settings,
             settings::update_settings,
             media::get_media_status,
@@ -57,9 +65,18 @@ pub fn run() {
             audio::get_audio_status,
             audio::set_volume,
             audio::toggle_mute,
+            audio::set_audio_default_endpoint,
             network::get_network_status,
+            network::toggle_wifi,
+            network::set_wifi_enabled,
+            network::scan_wifi_networks,
             bluetooth::get_bluetooth_status,
             bluetooth::toggle_bluetooth,
+            bluetooth::set_bluetooth_enabled,
+            bluetooth::connect_bluetooth_device,
+            bluetooth::disconnect_bluetooth_device,
+            brightness::get_brightness_status,
+            brightness::set_brightness,
             battery::get_battery_status,
             notifications::get_notifications,
             notifications::dismiss_notification,
